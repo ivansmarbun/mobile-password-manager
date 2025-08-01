@@ -1,6 +1,7 @@
 import { PasswordProvider } from "@/contexts/PasswordContexts";
 import { Stack } from "expo-router";
-import { Text } from "react-native";
+
+import EditHeaderButton from "@/components/EditHeaderButton";
 import './globals.css';
 
 export default function RootLayout() {
@@ -8,20 +9,17 @@ export default function RootLayout() {
     <PasswordProvider>
       <Stack>
         <Stack.Screen name="index" options={{ title: "Home" }} />
-        <Stack.Screen name="password/[id]" options={{
-           title: "",
-           headerRight: () => (
-            <Text
-              className="mx-auto text-blue-500"
-              onPress={() => {
-                // Add any action you want to perform when the header right text is pressed
-                console.log("Header right text pressed");
-              }}
-            >
-              Edit
-            </Text>
-           )
-          }} />
+        <Stack.Screen
+          name="add"
+          options={{
+            title: "Add Password",
+          }}
+        />
+        <Stack.Screen name="password/[id]/index" options={{
+          title: "",
+          headerRight: () => <EditHeaderButton />
+        }} />
+        <Stack.Screen name="password/[id]/edit" options={{ title: "Edit Password" }} />
       </Stack>
     </PasswordProvider>
   )

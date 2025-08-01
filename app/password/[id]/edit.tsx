@@ -3,39 +3,36 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function AddPassword() {
+export default function EditPassword() {
     const router = useRouter();
-    const { addPassword } = usePasswordContext(); // We'll add this function to context next
+    const { selectedPassword, setSelectedPassword, updatePassword } = usePasswordContext(); // We'll add this function to context next
 
     // Form state
-    const [website, setWebsite] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [website, setWebsite] = useState(selectedPassword.website);
+    const [username, setUsername] = useState(selectedPassword.username);
+    const [password, setPassword] = useState(selectedPassword.password);
 
     const handleSave = () => {
-        // Basic validation
         if (!website.trim() || !username.trim() || !password.trim()) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
 
-        // Add the password
-        addPassword({
+        const updatedPassword = {
             website: website.trim(),
             username: username.trim(),
             password: password.trim()
-        });
+        }
 
-        // Clear form and navigate back
-        setWebsite('');
-        setUsername('');
-        setPassword('');
+        updatePassword(selectedPassword.id, updatedPassword);
+        setSelectedPassword(updatedPassword)
+
         router.back();
     };
 
     return (
         <View className="flex-1 pt-12 px-4">
-            <Text className="text-2xl font-bold mb-6">Add New Password</Text>
+            <Text className="text-2xl font-bold mb-6">Update Password</Text>
 
             <View className="mb-4">
                 <Text className="text-lg font-semibold mb-2">Website</Text>

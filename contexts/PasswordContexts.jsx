@@ -18,8 +18,34 @@ export const PasswordProvider = ({ children }) => {
         setPasswords(dummyPassword)
     }, [])
 
+    const addPassword = (passwordData) => {
+        const newId = passwords.length > 0 ? Math.max(...passwords.map(p => p.id)) + 1 : 1;
+        const newPassword = {
+            id: newId,
+            ...passwordData
+        }
+        setPasswords((prevPasswords) => [...prevPasswords, newPassword])
+    };
+
+    const updatePassword = (id, updatedPasswordData) => {
+        setPasswords((prevPasswords) =>
+            prevPasswords.map(password =>
+                password.id === id
+                    ? { ...password, ...updatedPasswordData }
+                    : password
+            )
+        );
+    };
+
     return (
-        <PasswordContexts.Provider value={{ passwords, setPasswords, selectedPassword, setSelectedPassword }}>
+        <PasswordContexts.Provider value={{
+            passwords,
+            setPasswords,
+            selectedPassword,
+            setSelectedPassword,
+            addPassword,
+            updatePassword,
+        }}>
             {children}
         </PasswordContexts.Provider>
     )
