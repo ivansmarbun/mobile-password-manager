@@ -12,14 +12,14 @@ const PasswordDetails = () => {
                 <Text className="text-lg font-semibold mb-2">Username</Text>
                 <Text
                     className="border border-gray-300 rounded-lg p-3 text-base"
-                >${selectedPassword.username}</Text>
+                >{selectedPassword.username}</Text>
             </View>
 
             <View className="mb-6">
                 <Text className="text-lg font-semibold mb-2">Password</Text>
                 <Text
                     className="border border-gray-300 rounded-lg p-3 text-base"
-                >${selectedPassword.password}</Text>
+                >{selectedPassword.password}</Text>
             </View>
         </View>
     );
