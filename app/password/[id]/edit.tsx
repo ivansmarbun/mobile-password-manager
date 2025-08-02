@@ -7,6 +7,14 @@ const EditPassword = () => {
     const router = useRouter();
     const { selectedPassword, setSelectedPassword, updatePassword } = usePasswordContext();
 
+    if (!selectedPassword) {
+        return (
+            <View className="flex-1 pt-12 px-4">
+                <Text className="text-lg text-center">No password selected for editing</Text>
+            </View>
+        );
+    }
+
     // Form state
     const [website, setWebsite] = useState(selectedPassword.website);
     const [username, setUsername] = useState(selectedPassword.username);
@@ -18,14 +26,14 @@ const EditPassword = () => {
             return;
         }
 
-        const updatedPassword = {
+        const updatedPasswordData = {
             website: website.trim(),
             username: username.trim(),
             password: password.trim()
         }
 
-        updatePassword(selectedPassword.id, updatedPassword);
-        setSelectedPassword(updatedPassword)
+        updatePassword(selectedPassword.id, updatedPasswordData);
+        setSelectedPassword({ ...selectedPassword, ...updatedPasswordData });
 
         router.back();
     };

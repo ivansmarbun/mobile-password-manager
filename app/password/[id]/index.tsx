@@ -5,6 +5,14 @@ import { Text, View } from 'react-native';
 const PasswordDetails = () => {
     const { selectedPassword } = usePasswordContext();
 
+    if (!selectedPassword) {
+        return (
+            <View className="flex-1 pt-4">
+                <Text className="text-lg text-center">No password selected</Text>
+            </View>
+        );
+    }
+
     return (
         <View className="flex-1 pt-4">
             <Text className="text-lg font-bold text-center">{selectedPassword.website}</Text>

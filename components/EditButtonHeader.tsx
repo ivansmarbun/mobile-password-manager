@@ -5,6 +5,11 @@ import { Text } from 'react-native';
 
 const EditButtonHeader = () => {
     const { selectedPassword } = usePasswordContext()
+    
+    if (!selectedPassword) {
+        return null;
+    }
+    
     return (
         <Text
             className="mx-auto text-blue-500"
@@ -14,7 +19,7 @@ const EditButtonHeader = () => {
         >
             Edit
         </Text>
-    );;
+    );
 }
 
 export default EditButtonHeader;

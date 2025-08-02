@@ -7,6 +7,10 @@ const DeleteButtonHeader = () => {
     const { selectedPassword, deletePassword } = usePasswordContext()
     const [modalVisible, setModalVisible] = useState(false);
 
+    if (!selectedPassword) {
+        return null;
+    }
+
     const handleDelete = () => {
         deletePassword(selectedPassword.id);
         setModalVisible(false);
