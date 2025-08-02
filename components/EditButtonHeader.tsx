@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Text } from 'react-native';
 
-const EditHeaderButton = () => {
+const EditButtonHeader = () => {
     const { selectedPassword } = usePasswordContext()
     return (
         <Text
@@ -17,4 +17,4 @@ const EditHeaderButton = () => {
     );;
 }
 
-export default EditHeaderButton;
+export default EditButtonHeader;

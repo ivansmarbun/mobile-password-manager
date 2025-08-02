@@ -1,7 +1,8 @@
 import { PasswordProvider } from "@/contexts/PasswordContexts";
 import { Stack } from "expo-router";
 
-import EditHeaderButton from "@/components/EditHeaderButton";
+import DeleteButtonHeader from "@/components/DeleteButtonHeader";
+import EditButtonHeader from "@/components/EditButtonHeader";
 import './globals.css';
 
 export default function RootLayout() {
@@ -15,10 +16,17 @@ export default function RootLayout() {
             title: "Add Password",
           }}
         />
-        <Stack.Screen name="password/[id]/index" options={{
-          title: "",
-          headerRight: () => <EditHeaderButton />
-        }} />
+  <Stack.Screen name="password/[id]/index" options={{
+    title: "",
+    headerRight: () => {
+      return (
+        <>
+          <DeleteButtonHeader />
+          <EditButtonHeader />
+        </>
+      )
+    }
+  }} />
         <Stack.Screen name="password/[id]/edit" options={{ title: "Edit Password" }} />
       </Stack>
     </PasswordProvider>

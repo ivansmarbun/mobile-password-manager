@@ -37,6 +37,12 @@ export const PasswordProvider = ({ children }) => {
         );
     };
 
+    const deletePassword = (id) => {
+        setPasswords((prevPasswords) =>
+            prevPasswords.filter(password => password.id !== id)
+        );
+    };
+
     return (
         <PasswordContexts.Provider value={{
             passwords,
@@ -45,6 +51,7 @@ export const PasswordProvider = ({ children }) => {
             setSelectedPassword,
             addPassword,
             updatePassword,
+            deletePassword,
         }}>
             {children}
         </PasswordContexts.Provider>

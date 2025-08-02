@@ -3,9 +3,9 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-export default function EditPassword() {
+const EditPassword = () => {
     const router = useRouter();
-    const { selectedPassword, setSelectedPassword, updatePassword } = usePasswordContext(); // We'll add this function to context next
+    const { selectedPassword, setSelectedPassword, updatePassword } = usePasswordContext();
 
     // Form state
     const [website, setWebsite] = useState(selectedPassword.website);
@@ -80,4 +80,6 @@ export default function EditPassword() {
             </TouchableOpacity>
         </View>
     );
-}
+};
+
+export default EditPassword;
