@@ -3,6 +3,22 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
+
+// Password generation configuration
+const PASSWORD_CONFIG = {
+    length: 16,
+    characterSets: {
+        lowercase: 'abcdefghijklmnopqrstuvwxyz',
+        uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        numbers: '0123456789',
+        symbols: '!@#$%^&*'
+    },
+    // Combine all character sets for password generation
+    getAllCharacters() {
+        return Object.values(this.characterSets).join('');
+    }
+};
 
 export default function AddPassword() {
     const router = useRouter();
@@ -63,14 +79,30 @@ export default function AddPassword() {
         }
     };
 
-    const generatePassword = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-        let result = '';
-        for (let i = 0; i < 12; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
+    const generatePassword = async () => {
+        try {
+            const chars = PASSWORD_CONFIG.getAllCharacters();
+            const randomBytes = await Crypto.getRandomBytesAsync(PASSWORD_CONFIG.length);
+            
+            // Convert bytes to password characters
+            let result = '';
+            for (let i = 0; i < PASSWORD_CONFIG.length; i++) {
+                result += chars.charAt(randomBytes[i] % chars.length);
+            }
+            
+            setPassword(result);
+            setShowPassword(true);
+        } catch (error) {
+            console.error('Error generating password:', error);
+            // Fallback to Math.random if crypto fails
+            const chars = PASSWORD_CONFIG.getAllCharacters();
+            let result = '';
+            for (let i = 0; i < PASSWORD_CONFIG.length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            setPassword(result);
+            setShowPassword(true);
         }
-        setPassword(result);
-        setShowPassword(true);
     };
 
     return (

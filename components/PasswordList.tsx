@@ -1,4 +1,5 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -7,7 +8,19 @@ import { Ionicons } from '@expo/vector-icons';
 
 const PasswordList = () => {
     const router = useRouter();
+    const { logout } = useAuth();
     const { setSelectedPassword, loading, searchQuery, setSearchQuery, filteredPasswords, exportPasswords, importPasswords } = usePasswordContext();
+
+    const handleLogout = () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout? You will need to enter your master password again.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Logout', style: 'destructive', onPress: logout }
+            ]
+        );
+    };
 
     const handleExport = async () => {
         try {
@@ -52,8 +65,28 @@ const PasswordList = () => {
         <View className='flex-1 bg-gray-50'>
             {/* Header */}
             <View className="bg-white pt-12 pb-6 px-6 shadow-sm">
-                <Text className="text-3xl font-bold text-gray-900 mb-2">SecureVault</Text>
-                <Text className="text-gray-600 text-base">Your passwords, secured</Text>
+                <View className="flex-row items-center justify-between mb-2">
+                    <View className="flex-1">
+                        <Text className="text-3xl font-bold text-gray-900 mb-1">SecureVault</Text>
+                        <Text className="text-gray-600 text-base">Your passwords, secured</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                        <TouchableOpacity
+                            onPress={() => router.push('/settings')}
+                            className="bg-gray-100 p-3 rounded-full mr-3"
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="settings-outline" size={24} color="#6B7280" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={handleLogout}
+                            className="bg-gray-100 p-3 rounded-full"
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="log-out-outline" size={24} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
             
             <View className="flex-1 px-4">
