@@ -5,7 +5,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 
 export default function Settings() {
-    const { changeMasterPassword, logout, biometricCapabilities, isBiometricEnabled, enableBiometric, disableBiometric } = useAuth();
+    const { 
+        changeMasterPassword, 
+        logout, 
+        biometricCapabilities, 
+        isBiometricEnabled, 
+        enableBiometric, 
+        disableBiometric,
+        isAppLockEnabled,
+        appLockTimeout,
+        enableAppLock,
+        disableAppLock,
+        updateAppLockTimeout
+    } = useAuth();
     const router = useRouter();
     
     const [currentPassword, setCurrentPassword] = useState('');
@@ -18,11 +30,19 @@ export default function Settings() {
     });
     const [loading, setLoading] = useState(false);
     const [biometricLoading, setBiometricLoading] = useState(false);
+    const [appLockLoading, setAppLockLoading] = useState(false);
     const [errors, setErrors] = useState({
         current: '',
         new: '',
         confirm: ''
     });
+
+    const timeoutOptions = [
+        { label: '1 minute', value: 1 },
+        { label: '5 minutes', value: 5 },
+        { label: '15 minutes', value: 15 },
+        { label: '30 minutes', value: 30 }
+    ];
 
     const validateNewPassword = (pwd: string): string => {
         if (pwd.length < 8) {
@@ -102,6 +122,43 @@ export default function Settings() {
             Alert.alert('Error', 'An error occurred while toggling biometric authentication');
         } finally {
             setBiometricLoading(false);
+        }
+    };
+
+    const handleAppLockToggle = async () => {
+        setAppLockLoading(true);
+        try {
+            if (isAppLockEnabled) {
+                const success = await disableAppLock();
+                if (!success) {
+                    Alert.alert('Error', 'Failed to disable app lock');
+                }
+            } else {
+                const success = await enableAppLock(appLockTimeout);
+                if (!success) {
+                    Alert.alert('Error', 'Failed to enable app lock');
+                }
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An error occurred while toggling app lock');
+        } finally {
+            setAppLockLoading(false);
+        }
+    };
+
+    const handleTimeoutChange = async (newTimeout: number) => {
+        try {
+            if (isAppLockEnabled) {
+                const success = await updateAppLockTimeout(newTimeout);
+                if (!success) {
+                    Alert.alert('Error', 'Failed to update timeout setting');
+                }
+            } else {
+                // If app lock is not enabled, just update the default timeout
+                await updateAppLockTimeout(newTimeout);
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An error occurred while updating timeout');
         }
     };
 
@@ -301,6 +358,78 @@ export default function Settings() {
                         )}
                     </View>
                 )}
+
+                {/* App Lock Section */}
+                <View className="bg-white rounded-xl p-6 mb-6 shadow-sm" style={{elevation: 2}}>
+                    <View className="flex-row items-center mb-4">
+                        <Ionicons name="timer-outline" size={24} color="#3B82F6" style={{marginRight: 12}} />
+                        <Text className="text-xl font-bold text-gray-900">App Lock</Text>
+                    </View>
+
+                    <Text className="text-gray-600 text-base mb-4">
+                        Automatically lock the app after a period of inactivity or when it goes to the background for enhanced security.
+                    </Text>
+
+                    {/* App Lock Toggle */}
+                    <TouchableOpacity
+                        onPress={handleAppLockToggle}
+                        disabled={appLockLoading}
+                        className="flex-row items-center justify-between py-4 px-4 rounded-lg bg-gray-50 mb-4"
+                        activeOpacity={0.7}
+                    >
+                        <View className="flex-row items-center flex-1">
+                            <Text className="font-medium text-base text-gray-900">
+                                Enable App Lock
+                            </Text>
+                        </View>
+                        
+                        {appLockLoading ? (
+                            <Ionicons name="reload-outline" size={20} color="#3B82F6" />
+                        ) : (
+                            <View className={`w-12 h-6 rounded-full ${
+                                isAppLockEnabled ? 'bg-green-500' : 'bg-gray-300'
+                            } flex-row items-center ${
+                                isAppLockEnabled ? 'justify-end' : 'justify-start'
+                            } px-1`}>
+                                <View className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                            </View>
+                        )}
+                    </TouchableOpacity>
+
+                    {/* Timeout Options */}
+                    {isAppLockEnabled && (
+                        <View>
+                            <Text className="text-base font-semibold text-gray-900 mb-3">Auto-lock timeout</Text>
+                            {timeoutOptions.map((option) => (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    onPress={() => handleTimeoutChange(option.value)}
+                                    className="flex-row items-center justify-between py-3 px-4 rounded-lg mb-2"
+                                    style={{backgroundColor: appLockTimeout === option.value ? '#EBF8FF' : '#F9FAFB'}}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text className={`font-medium ${
+                                        appLockTimeout === option.value ? 'text-blue-600' : 'text-gray-900'
+                                    }`}>
+                                        {option.label}
+                                    </Text>
+                                    {appLockTimeout === option.value && (
+                                        <Ionicons name="checkmark" size={20} color="#3B82F6" />
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+
+                    {isAppLockEnabled && (
+                        <View className="mt-4 flex-row items-start">
+                            <Ionicons name="information-circle-outline" size={16} color="#3B82F6" style={{marginRight: 6, marginTop: 2}} />
+                            <Text className="text-blue-600 text-sm flex-1">
+                                The app will automatically lock when it goes to the background or after {appLockTimeout} minute{appLockTimeout !== 1 ? 's' : ''} of inactivity.
+                            </Text>
+                        </View>
+                    )}
+                </View>
 
                 {/* Other Settings */}
                 <View className="bg-white rounded-xl p-6 mb-6 shadow-sm" style={{elevation: 2}}>

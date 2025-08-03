@@ -2,16 +2,42 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View, Text } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInactivityTimer } from '@/hooks/useInactivityTimer';
 
 interface AuthGuardProps {
     children: React.ReactNode;
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
-    const { isAuthenticated, hasSetupMasterPassword, loading, isBiometricEnabled, authenticateWithBiometric } = useAuth();
+    const { 
+        isAuthenticated, 
+        hasSetupMasterPassword, 
+        loading, 
+        isBiometricEnabled, 
+        authenticateWithBiometric,
+        isAppLockEnabled,
+        appLockTimeout,
+        lockApp,
+        isManualLogout
+    } = useAuth();
     const router = useRouter();
     const segments = useSegments();
     const [biometricPrompted, setBiometricPrompted] = useState(false);
+
+    // Handle inactivity timeout
+    const handleInactivityTimeout = () => {
+        if (isAuthenticated && isAppLockEnabled) {
+            setBiometricPrompted(false); // Reset biometric prompt state
+            lockApp();
+        }
+    };
+
+    // Setup inactivity timer
+    const { panResponder } = useInactivityTimer({
+        onInactivityTimeout: handleInactivityTimeout,
+        timeoutMinutes: appLockTimeout,
+        enabled: isAuthenticated && isAppLockEnabled
+    });
 
     useEffect(() => {
         if (loading) return; // Wait for auth state to load
@@ -26,8 +52,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         } else if (!isAuthenticated) {
             // Master password is set up but user is not authenticated
             if (!inAuthGroup) {
-                // Check if biometric is enabled and not already prompted
-                if (isBiometricEnabled && !biometricPrompted) {
+                // Check if biometric is enabled, not already prompted, and not a manual logout
+                if (isBiometricEnabled && !biometricPrompted && !isManualLogout) {
                     setBiometricPrompted(true);
                     // Attempt biometric authentication first
                     authenticateWithBiometric().then((result) => {
@@ -41,6 +67,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                         router.replace('/login');
                     });
                 } else {
+                    // Always redirect to login if not trying biometric authentication
                     router.replace('/login');
                 }
             }
@@ -52,7 +79,39 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             // Reset biometric prompted state when authenticated
             setBiometricPrompted(false);
         }
-    }, [isAuthenticated, hasSetupMasterPassword, loading, segments, isBiometricEnabled, biometricPrompted]);
+    }, [isAuthenticated, hasSetupMasterPassword, loading, segments, isBiometricEnabled, biometricPrompted, isManualLogout, router, authenticateWithBiometric]);
+
+    // Reset biometric prompted state when user becomes unauthenticated
+    useEffect(() => {
+        if (!isAuthenticated && !loading) {
+            setBiometricPrompted(false);
+        }
+    }, [isAuthenticated, loading]);
+
+    // Force redirect when app lock occurs
+    useEffect(() => {
+        if (!isAuthenticated && !loading && hasSetupMasterPassword) {
+            const inAuthGroup = segments[0] === 'login' || segments[0] === 'setup-master-password';
+            if (!inAuthGroup) {
+                // Force immediate redirect to login if not already on auth screen
+                setTimeout(() => {
+                    if (isBiometricEnabled && !isManualLogout) {
+                        // Try biometric first
+                        setBiometricPrompted(true);
+                        authenticateWithBiometric().then((result) => {
+                            if (!result.success) {
+                                router.replace('/login');
+                            }
+                        }).catch(() => {
+                            router.replace('/login');
+                        });
+                    } else {
+                        router.replace('/login');
+                    }
+                }, 100); // Small delay to ensure state has updated
+            }
+        }
+    }, [isAuthenticated, loading, hasSetupMasterPassword, segments, isBiometricEnabled, isManualLogout, router, authenticateWithBiometric]);
 
     // Show loading screen while determining auth state
     if (loading) {
@@ -69,5 +128,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
 
     // Show app content if authenticated or on auth screens
-    return <>{children}</>;
+    // Wrap with pan responder to detect touch events for inactivity timer
+    return (
+        <View style={{ flex: 1 }} {...(isAuthenticated && isAppLockEnabled ? panResponder.panHandlers : {})}>
+            {children}
+        </View>
+    );
 }

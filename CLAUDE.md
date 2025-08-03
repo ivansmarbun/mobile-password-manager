@@ -20,6 +20,7 @@ app/
 ├── _layout.tsx          # Root layout with PasswordProvider and Stack navigation
 ├── index.tsx            # Home page (renders PasswordList component)
 ├── add.tsx              # Add password page with complete form implementation
+├── settings.tsx         # Settings page with security and app lock configuration
 ├── password/[id]/
 │   ├── index.tsx        # Password detail page
 │   └── edit.tsx         # Edit password page
@@ -28,11 +29,15 @@ app/
 components/
 ├── PasswordList.tsx        # Main password list component with professional card design
 ├── EditButtonHeader.tsx    # Icon-based edit button for password detail header
-└── DeleteButtonHeader.tsx  # Icon-based delete button with enhanced confirmation modal
+├── DeleteButtonHeader.tsx  # Icon-based delete button with enhanced confirmation modal
+└── AuthGuard.tsx          # Authentication guard with biometric and app lock integration
 
 contexts/
 ├── PasswordContexts.tsx # Password context with TypeScript types and state management
-└── AuthContext.tsx      # Authentication context with master password and biometric auth
+└── AuthContext.tsx      # Authentication context with master password, biometric auth, and app lock
+
+hooks/
+└── useInactivityTimer.tsx # Custom hook for tracking user activity and handling app lock timeouts
 
 utils/
 └── BiometricAuth.tsx    # Biometric authentication utility with device capability detection
@@ -164,6 +169,14 @@ utils/
   - Professional UI with device-specific icons and messaging
   - Comprehensive error handling for all biometric scenarios
   - Security requirement: biometric authentication supplements (not replaces) master password
+- **App Lock**: Complete auto-lock functionality with configurable timeout
+  - Configurable inactivity timeouts (1, 5, 15, 30 minutes)
+  - Automatic lock when app goes to background
+  - Touch-based activity detection to reset timer
+  - Smart biometric authentication flow (skip biometric on manual logout)
+  - Professional settings UI with timeout selection
+  - Integration with existing authentication system
+  - Immediate lock and redirect to login screen on timeout
 
 ### ❌ Missing Features
 - None! All core features completed with professional UI design
@@ -173,7 +186,7 @@ utils/
 #### Security & Authentication
 - [x] **Master Password Protection**: App-level authentication system
 - [x] **Biometric Authentication**: TouchID/FaceID/Fingerprint integration
-- [ ] **App Lock**: Auto-lock after inactivity period
+- [x] **App Lock**: Auto-lock after inactivity period
 - [ ] **Background Protection**: Hide app content when backgrounded
 - [ ] **Screenshot Protection**: Prevent screenshots in sensitive screens
 - [ ] **Password Strength Validation**: Enforce strong password policies
@@ -229,7 +242,7 @@ interface Password {
 ## Development Notes
 - Using NativeWind for styling (Tailwind CSS classes)
 - PasswordContext provides: `passwords`, `setPasswords`, `selectedPassword`, `setSelectedPassword`, `addPassword`, `updatePassword`, `deletePassword`, `loading`, `searchQuery`, `setSearchQuery`, `filteredPasswords`, `sortedAndGroupedPasswords`, `exportPasswords`, `importPasswords`
-- AuthContext provides: `isAuthenticated`, `hasSetupMasterPassword`, `setupMasterPassword`, `login`, `logout`, `changeMasterPassword`, `loading`, `biometricCapabilities`, `isBiometricEnabled`, `enableBiometric`, `disableBiometric`, `authenticateWithBiometric`
+- AuthContext provides: `isAuthenticated`, `hasSetupMasterPassword`, `setupMasterPassword`, `login`, `logout`, `changeMasterPassword`, `loading`, `biometricCapabilities`, `isBiometricEnabled`, `enableBiometric`, `disableBiometric`, `authenticateWithBiometric`, `isAppLockEnabled`, `appLockTimeout`, `enableAppLock`, `disableAppLock`, `updateAppLockTimeout`, `lockApp`, `isManualLogout`
 - All CRUD operations are async and persist to SecureStore
 - Individual password storage pattern for scalability
 - Navigation handled by Expo Router with file-based routing
@@ -253,6 +266,16 @@ interface Password {
   - Implemented graceful fallback to master password on biometric failures
   - Added comprehensive error handling and user feedback for all biometric scenarios
   - Maintained security principle: biometrics supplement but never replace master password
+- **NEW**: App Lock with Inactivity Timeout
+  - Implemented complete auto-lock functionality with configurable timeout periods
+  - Created useInactivityTimer custom hook with React Native AppState monitoring
+  - Added touch-based activity detection using PanResponder for timer reset
+  - Enhanced AuthContext with app lock state management and persistent settings
+  - Professional settings UI with timeout selection (1, 5, 15, 30 minutes)
+  - Smart biometric authentication flow that distinguishes manual logout from auto-lock
+  - Automatic redirect to login screen when timeout occurs or app returns from background
+  - Integration with existing authentication system and biometric authentication
+  - Comprehensive error handling and edge case management for app state transitions
 - **NEW**: Complete professional UI enhancement
   - Implemented modern design system with consistent colors, typography, and spacing
   - Added comprehensive iconography using Expo Vector Icons throughout the app

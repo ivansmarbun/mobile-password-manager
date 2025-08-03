@@ -17,6 +17,14 @@ interface AuthContextType {
     enableBiometric: () => Promise<boolean>;
     disableBiometric: () => Promise<boolean>;
     authenticateWithBiometric: () => Promise<BiometricAuthResult>;
+    // App lock functionality
+    isAppLockEnabled: boolean;
+    appLockTimeout: number; // in minutes
+    enableAppLock: (timeoutMinutes: number) => Promise<boolean>;
+    disableAppLock: () => Promise<boolean>;
+    updateAppLockTimeout: (timeoutMinutes: number) => Promise<boolean>;
+    lockApp: () => void;
+    isManualLogout: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +40,8 @@ export const useAuth = () => {
 const MASTER_PASSWORD_KEY = 'master_password_hash';
 const SALT_KEY = 'password_salt';
 const BIOMETRIC_ENABLED_KEY = 'biometric_enabled';
+const APP_LOCK_ENABLED_KEY = 'app_lock_enabled';
+const APP_LOCK_TIMEOUT_KEY = 'app_lock_timeout';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,6 +49,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const [biometricCapabilities, setBiometricCapabilities] = useState<BiometricCapabilities | null>(null);
     const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+    const [isAppLockEnabled, setIsAppLockEnabled] = useState(false);
+    const [appLockTimeout, setAppLockTimeout] = useState(15); // Default to 15 minutes
+    const [isManualLogout, setIsManualLogout] = useState(false);
 
     // Generate a random salt for password hashing using expo-crypto
     const generateSalt = async (): Promise<string> => {
@@ -69,6 +82,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const biometricEnabledStr = await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY);
             const biometricEnabled = biometricEnabledStr === 'true' && capabilities.isAvailable;
             setIsBiometricEnabled(biometricEnabled);
+            
+            // Initialize app lock settings
+            const appLockEnabledStr = await SecureStore.getItemAsync(APP_LOCK_ENABLED_KEY);
+            const appLockEnabled = appLockEnabledStr === 'true';
+            setIsAppLockEnabled(appLockEnabled);
+            
+            const appLockTimeoutStr = await SecureStore.getItemAsync(APP_LOCK_TIMEOUT_KEY);
+            const timeout = appLockTimeoutStr ? parseInt(appLockTimeoutStr, 10) : 15;
+            setAppLockTimeout(timeout);
         } catch (error) {
             console.error('Error checking master password setup:', error);
             setHasSetupMasterPassword(false);
@@ -115,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const inputHash = await hashPassword(password, salt);
 
             if (inputHash === storedHash) {
+                setIsManualLogout(false); // Reset manual logout flag on successful login
                 setIsAuthenticated(true);
                 return true;
             } else {
@@ -128,6 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Logout
     const logout = (): void => {
+        setIsManualLogout(true);
         setIsAuthenticated(false);
     };
 
@@ -223,6 +247,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // Enable app lock with timeout
+    const enableAppLock = async (timeoutMinutes: number): Promise<boolean> => {
+        try {
+            await SecureStore.setItemAsync(APP_LOCK_ENABLED_KEY, 'true');
+            await SecureStore.setItemAsync(APP_LOCK_TIMEOUT_KEY, timeoutMinutes.toString());
+            setIsAppLockEnabled(true);
+            setAppLockTimeout(timeoutMinutes);
+            return true;
+        } catch (error) {
+            console.error('Error enabling app lock:', error);
+            return false;
+        }
+    };
+
+    // Disable app lock
+    const disableAppLock = async (): Promise<boolean> => {
+        try {
+            await SecureStore.deleteItemAsync(APP_LOCK_ENABLED_KEY);
+            setIsAppLockEnabled(false);
+            return true;
+        } catch (error) {
+            console.error('Error disabling app lock:', error);
+            return false;
+        }
+    };
+
+    // Update app lock timeout
+    const updateAppLockTimeout = async (timeoutMinutes: number): Promise<boolean> => {
+        try {
+            await SecureStore.setItemAsync(APP_LOCK_TIMEOUT_KEY, timeoutMinutes.toString());
+            setAppLockTimeout(timeoutMinutes);
+            return true;
+        } catch (error) {
+            console.error('Error updating app lock timeout:', error);
+            return false;
+        }
+    };
+
+    // Lock the app (logout but keep settings)
+    const lockApp = (): void => {
+        setIsManualLogout(false); // This is automatic lock, not manual logout
+        setIsAuthenticated(false);
+    };
+
     useEffect(() => {
         checkMasterPasswordSetup();
     }, []);
@@ -240,7 +308,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isBiometricEnabled,
             enableBiometric,
             disableBiometric,
-            authenticateWithBiometric
+            authenticateWithBiometric,
+            isAppLockEnabled,
+            appLockTimeout,
+            enableAppLock,
+            disableAppLock,
+            updateAppLockTimeout,
+            lockApp,
+            isManualLogout
         }}>
             {children}
         </AuthContext.Provider>
