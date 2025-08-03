@@ -48,6 +48,8 @@ utils/
   - Icon-enhanced search bar with proper positioning
   - Color-coded export/import buttons with icons
   - Modern card layout for password entries with website icons
+  - Alphabetical sorting with sectioned display (A-Z, 0-9, #)
+  - Professional section dividers with letter headers
   - Professional empty states with icons and messaging
   - Enhanced floating action button with proper elevation
   - Consistent gray background for better visual hierarchy
@@ -226,7 +228,7 @@ interface Password {
 
 ## Development Notes
 - Using NativeWind for styling (Tailwind CSS classes)
-- PasswordContext provides: `passwords`, `setPasswords`, `selectedPassword`, `setSelectedPassword`, `addPassword`, `updatePassword`, `deletePassword`, `loading`, `searchQuery`, `setSearchQuery`, `filteredPasswords`, `exportPasswords`, `importPasswords`
+- PasswordContext provides: `passwords`, `setPasswords`, `selectedPassword`, `setSelectedPassword`, `addPassword`, `updatePassword`, `deletePassword`, `loading`, `searchQuery`, `setSearchQuery`, `filteredPasswords`, `sortedAndGroupedPasswords`, `exportPasswords`, `importPasswords`
 - AuthContext provides: `isAuthenticated`, `hasSetupMasterPassword`, `setupMasterPassword`, `login`, `logout`, `changeMasterPassword`, `loading`, `biometricCapabilities`, `isBiometricEnabled`, `enableBiometric`, `disableBiometric`, `authenticateWithBiometric`
 - All CRUD operations are async and persist to SecureStore
 - Individual password storage pattern for scalability
@@ -234,6 +236,13 @@ interface Password {
 - Add screen configured as modal presentation in navigation stack
 
 ## Update Log
+- **NEW**: Alphabetical Sorting with Section Dividers
+  - Added alphabetical sorting to PasswordList component with professional section headers
+  - Implemented sortedAndGroupedPasswords in PasswordContext for organized data structure
+  - Replaced FlatList with SectionList to support sectioned display (A-Z, 0-9, #)
+  - Maintains search functionality across alphabetically sorted sections
+  - Professional gray section headers with bold letter styling
+  - Optimized performance with useMemo for grouping and sorting operations
 - **NEW**: Biometric Authentication Implementation
   - Added expo-local-authentication package for TouchID/FaceID/Fingerprint support
   - Created BiometricAuth utility module with comprehensive device capability detection

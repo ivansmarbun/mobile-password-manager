@@ -2,14 +2,14 @@ import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, SectionList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 
 const PasswordList = () => {
     const router = useRouter();
     const { logout } = useAuth();
-    const { setSelectedPassword, loading, searchQuery, setSearchQuery, filteredPasswords, exportPasswords, importPasswords } = usePasswordContext();
+    const { setSelectedPassword, loading, searchQuery, setSearchQuery, filteredPasswords, sortedAndGroupedPasswords, exportPasswords, importPasswords } = usePasswordContext();
 
     const handleLogout = () => {
         Alert.alert(
@@ -152,8 +152,8 @@ const PasswordList = () => {
                 )}
 
                 {filteredPasswords.length > 0 && (
-                    <FlatList
-                        data={filteredPasswords}
+                    <SectionList
+                        sections={sortedAndGroupedPasswords}
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 onPress={() => {
@@ -177,9 +177,15 @@ const PasswordList = () => {
                                 </View>
                             </TouchableOpacity>
                         )}
+                        renderSectionHeader={({ section: { title } }) => (
+                            <View className="bg-gray-100 px-4 py-2 mb-2 mt-4 rounded-lg">
+                                <Text className="text-gray-700 font-bold text-lg">{title}</Text>
+                            </View>
+                        )}
                         keyExtractor={item => item.id.toString()}
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{paddingBottom: 100}}
+                        stickySectionHeadersEnabled={false}
                     />
                 )}
             </View>

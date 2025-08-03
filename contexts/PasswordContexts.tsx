@@ -11,6 +11,11 @@ interface Password {
     password: string;
 }
 
+interface PasswordSection {
+    title: string;
+    data: Password[];
+}
+
 interface PasswordContextType {
     passwords: Password[];
     setPasswords: React.Dispatch<React.SetStateAction<Password[]>>;
@@ -23,6 +28,7 @@ interface PasswordContextType {
     searchQuery: string;
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     filteredPasswords: Password[];
+    sortedAndGroupedPasswords: PasswordSection[];
     exportPasswords: () => Promise<void>;
     importPasswords: () => Promise<void>;
 }
@@ -258,6 +264,55 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
         );
     }, [passwords, searchQuery]);
 
+    const sortedAndGroupedPasswords = useMemo(() => {
+        // Sort passwords alphabetically by website name
+        const sortedPasswords = [...filteredPasswords].sort((a, b) => 
+            a.website.toLowerCase().localeCompare(b.website.toLowerCase())
+        );
+
+        // Group passwords by first letter
+        const groupedMap = new Map<string, Password[]>();
+        
+        sortedPasswords.forEach(password => {
+            const firstChar = password.website.charAt(0).toUpperCase();
+            let section: string;
+            
+            if (/[A-Z]/.test(firstChar)) {
+                section = firstChar;
+            } else if (/[0-9]/.test(firstChar)) {
+                section = '0-9';
+            } else {
+                section = '#';
+            }
+            
+            if (!groupedMap.has(section)) {
+                groupedMap.set(section, []);
+            }
+            groupedMap.get(section)!.push(password);
+        });
+
+        // Convert to array and sort sections
+        const sections: PasswordSection[] = [];
+        const sortedSectionKeys = Array.from(groupedMap.keys()).sort((a, b) => {
+            // Custom sort: A-Z first, then 0-9, then #
+            if (a === '0-9' && b === '#') return -1;
+            if (a === '#' && b === '0-9') return 1;
+            if (a === '0-9' || a === '#') return 1;
+            if (b === '0-9' || b === '#') return -1;
+            return a.localeCompare(b);
+        });
+
+        sortedSectionKeys.forEach(key => {
+            const passwords = groupedMap.get(key)!;
+            sections.push({
+                title: key,
+                data: passwords
+            });
+        });
+
+        return sections;
+    }, [filteredPasswords]);
+
     return (
         <PasswordContexts.Provider value={{
             passwords,
@@ -271,6 +326,7 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
             searchQuery,
             setSearchQuery,
             filteredPasswords,
+            sortedAndGroupedPasswords,
             exportPasswords,
             importPasswords
         }}>
