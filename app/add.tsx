@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View, ScrollView, Keyboard, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
+import PasswordToggle from '@/components/PasswordToggle';
 
 // Password generation configuration
 const PASSWORD_CONFIG = {
@@ -231,17 +232,13 @@ export default function AddPassword() {
                                 }, 300);
                             }}
                         />
-                        <TouchableOpacity
-                            onPress={() => setShowPassword(!showPassword)}
-                            style={{position: 'absolute', right: 16, top: 16}}
-                            activeOpacity={0.7}
-                        >
-                            <Ionicons 
-                                name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
-                                size={20} 
-                                color="#9CA3AF" 
-                            />
-                        </TouchableOpacity>
+                        <PasswordToggle
+                            isVisible={showPassword}
+                            onToggle={() => setShowPassword(!showPassword)}
+                            size={20}
+                            color="#9CA3AF"
+                            iconVariant="outline"
+                        />
                     </View>
                     {errors.password ? <Text className="text-red-500 text-sm mt-1 ml-2">{errors.password}</Text> : null}
                 </View>

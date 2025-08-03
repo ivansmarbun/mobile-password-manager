@@ -3,6 +3,7 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
+import PasswordToggle from '@/components/PasswordToggle';
 
 export default function Settings() {
     const { 
@@ -163,7 +164,7 @@ export default function Settings() {
     };
 
     return (
-        <ScrollView className="flex-1 bg-gray-50">
+        <ScrollView className="flex-1 bg-gray-50" keyboardShouldPersistTaps="handled">
             {/* Header */}
             <View className="bg-white pt-12 pb-6 px-6 shadow-sm">
                 <Text className="text-3xl font-bold text-gray-900 mb-2">Settings</Text>
@@ -192,17 +193,13 @@ export default function Settings() {
                                 secureTextEntry={!showPasswords.current}
                                 className={`bg-gray-50 border ${errors.current ? 'border-red-300' : 'border-gray-200'} rounded-lg pl-4 pr-12 py-3 text-base`}
                             />
-                            <TouchableOpacity
-                                onPress={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
-                                style={{position: 'absolute', right: 12, top: 12}}
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons 
-                                    name={showPasswords.current ? 'eye-off-outline' : 'eye-outline'} 
-                                    size={20} 
-                                    color="#9CA3AF" 
-                                />
-                            </TouchableOpacity>
+                            <PasswordToggle
+                                isVisible={showPasswords.current}
+                                onToggle={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                                size={20}
+                                color="#9CA3AF"
+                                iconVariant="outline"
+                            />
                         </View>
                         {errors.current ? <Text className="text-red-500 text-sm mt-1">{errors.current}</Text> : null}
                     </View>
@@ -221,17 +218,13 @@ export default function Settings() {
                                 secureTextEntry={!showPasswords.new}
                                 className={`bg-gray-50 border ${errors.new ? 'border-red-300' : 'border-gray-200'} rounded-lg pl-4 pr-12 py-3 text-base`}
                             />
-                            <TouchableOpacity
-                                onPress={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
-                                style={{position: 'absolute', right: 12, top: 12}}
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons 
-                                    name={showPasswords.new ? 'eye-off-outline' : 'eye-outline'} 
-                                    size={20} 
-                                    color="#9CA3AF" 
-                                />
-                            </TouchableOpacity>
+                            <PasswordToggle
+                                isVisible={showPasswords.new}
+                                onToggle={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                                size={20}
+                                color="#9CA3AF"
+                                iconVariant="outline"
+                            />
                         </View>
                         {errors.new ? <Text className="text-red-500 text-sm mt-1">{errors.new}</Text> : null}
                     </View>
@@ -250,17 +243,13 @@ export default function Settings() {
                                 secureTextEntry={!showPasswords.confirm}
                                 className={`bg-gray-50 border ${errors.confirm ? 'border-red-300' : 'border-gray-200'} rounded-lg pl-4 pr-12 py-3 text-base`}
                             />
-                            <TouchableOpacity
-                                onPress={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
-                                style={{position: 'absolute', right: 12, top: 12}}
-                                activeOpacity={0.7}
-                            >
-                                <Ionicons 
-                                    name={showPasswords.confirm ? 'eye-off-outline' : 'eye-outline'} 
-                                    size={20} 
-                                    color="#9CA3AF" 
-                                />
-                            </TouchableOpacity>
+                            <PasswordToggle
+                                isVisible={showPasswords.confirm}
+                                onToggle={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                                size={20}
+                                color="#9CA3AF"
+                                iconVariant="outline"
+                            />
                         </View>
                         {errors.confirm ? <Text className="text-red-500 text-sm mt-1">{errors.confirm}</Text> : null}
                     </View>

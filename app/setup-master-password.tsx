@@ -3,6 +3,7 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
+import PasswordToggle from '@/components/PasswordToggle';
 
 export default function SetupMasterPassword() {
     const { setupMasterPassword } = useAuth();
@@ -80,7 +81,7 @@ export default function SetupMasterPassword() {
     const passwordStrength = getPasswordStrength(password);
 
     return (
-        <ScrollView className="flex-1 bg-gray-50">
+        <ScrollView className="flex-1 bg-gray-50" keyboardShouldPersistTaps="handled">
             {/* Header */}
             <View className="bg-white pt-12 pb-6 px-6 shadow-sm">
                 <View className="items-center mb-4">
@@ -116,17 +117,13 @@ export default function SetupMasterPassword() {
                             className={`bg-white border ${errors.password ? 'border-red-300' : 'border-gray-200'} rounded-xl pl-12 pr-12 py-4 text-base shadow-sm`}
                             style={{elevation: 1}}
                         />
-                        <TouchableOpacity
-                            onPress={() => setShowPassword(!showPassword)}
-                            style={{position: 'absolute', right: 16, top: 16}}
-                            activeOpacity={0.7}
-                        >
-                            <Ionicons 
-                                name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
-                                size={20} 
-                                color="#9CA3AF" 
-                            />
-                        </TouchableOpacity>
+                        <PasswordToggle
+                            isVisible={showPassword}
+                            onToggle={() => setShowPassword(!showPassword)}
+                            size={20}
+                            color="#9CA3AF"
+                            iconVariant="outline"
+                        />
                     </View>
                     {errors.password ? (
                         <Text className="text-red-500 text-sm mt-1 ml-2">{errors.password}</Text>
@@ -179,17 +176,13 @@ export default function SetupMasterPassword() {
                             className={`bg-white border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-200'} rounded-xl pl-12 pr-12 py-4 text-base shadow-sm`}
                             style={{elevation: 1}}
                         />
-                        <TouchableOpacity
-                            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                            style={{position: 'absolute', right: 16, top: 16}}
-                            activeOpacity={0.7}
-                        >
-                            <Ionicons 
-                                name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'} 
-                                size={20} 
-                                color="#9CA3AF" 
-                            />
-                        </TouchableOpacity>
+                        <PasswordToggle
+                            isVisible={showConfirmPassword}
+                            onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                            size={20}
+                            color="#9CA3AF"
+                            iconVariant="outline"
+                        />
                     </View>
                     {errors.confirmPassword ? (
                         <Text className="text-red-500 text-sm mt-1 ml-2">{errors.confirmPassword}</Text>
