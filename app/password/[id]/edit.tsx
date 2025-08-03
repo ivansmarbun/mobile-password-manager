@@ -1,7 +1,7 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { Alert, Text, TextInput, TouchableOpacity, View, ScrollView, Keyboard, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 
@@ -23,6 +23,23 @@ const PASSWORD_CONFIG = {
 const EditPassword = () => {
     const router = useRouter();
     const { selectedPassword, setSelectedPassword, updatePassword } = usePasswordContext();
+    const scrollViewRef = useRef<ScrollView>(null);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [screenHeight] = useState(Dimensions.get('window').height);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
+            setKeyboardHeight(e.endCoordinates.height);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
 
     if (!selectedPassword) {
         return (
@@ -113,7 +130,18 @@ const EditPassword = () => {
     };
 
     return (
-        <ScrollView className="flex-1 bg-gray-50">
+        <View className="flex-1">
+            <ScrollView 
+                ref={scrollViewRef}
+                className="flex-1 bg-gray-50" 
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ 
+                    paddingBottom: keyboardHeight > 0 ? keyboardHeight + 50 : 100,
+                    minHeight: screenHeight
+                }}
+                showsVerticalScrollIndicator={false}
+                automaticallyAdjustKeyboardInsets={true}
+            >
             {/* Header */}
             <View className="bg-white pt-12 pb-6 px-6 shadow-sm">
                 <Text className="text-3xl font-bold text-gray-900 mb-2">Edit Password</Text>
@@ -135,7 +163,7 @@ const EditPassword = () => {
                             value={website}
                             onChangeText={(text) => {
                                 setWebsite(text);
-                                if (errors.website) setErrors({...errors, website: ''});
+                                if (errors.website) setErrors(prev => ({...prev, website: ''}));
                             }}
                             placeholder="Enter website name"
                             className={`bg-white border ${errors.website ? 'border-red-300' : 'border-gray-200'} rounded-xl pl-12 pr-4 py-4 text-base shadow-sm`}
@@ -159,7 +187,7 @@ const EditPassword = () => {
                             value={username}
                             onChangeText={(text) => {
                                 setUsername(text);
-                                if (errors.username) setErrors({...errors, username: ''});
+                                if (errors.username) setErrors(prev => ({...prev, username: ''}));
                             }}
                             placeholder="Enter username or email"
                             className={`bg-white border ${errors.username ? 'border-red-300' : 'border-gray-200'} rounded-xl pl-12 pr-4 py-4 text-base shadow-sm`}
@@ -197,12 +225,18 @@ const EditPassword = () => {
                             value={password}
                             onChangeText={(text) => {
                                 setPassword(text);
-                                if (errors.password) setErrors({...errors, password: ''});
+                                if (errors.password) setErrors(prev => ({...prev, password: ''}));
                             }}
                             placeholder="Enter password"
                             secureTextEntry={!showPassword}
                             className={`bg-white border ${errors.password ? 'border-red-300' : 'border-gray-200'} rounded-xl pl-12 pr-12 py-4 text-base shadow-sm`}
                             style={{elevation: 1}}
+                            onFocus={() => {
+                                // Scroll to the password field when focused, accounting for keyboard
+                                setTimeout(() => {
+                                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                                }, 300);
+                            }}
                         />
                         <TouchableOpacity
                             onPress={() => setShowPassword(!showPassword)}
@@ -220,7 +254,7 @@ const EditPassword = () => {
                 </View>
 
                 {/* Action Buttons */}
-                <View className="mt-8 mb-6">
+                <View className="mt-8 mb-20">
                     <TouchableOpacity
                         onPress={handleSave}
                         className="bg-blue-500 py-4 rounded-xl mb-4 shadow-sm"
@@ -245,7 +279,8 @@ const EditPassword = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 };
 
