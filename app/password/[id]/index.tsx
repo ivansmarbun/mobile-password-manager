@@ -14,7 +14,7 @@ const PasswordDetails = () => {
     }
 
     return (
-        <View className="flex-1 pt-4">
+        <View className="flex-1 pt-12 px-4">
             <Text className="text-lg font-bold text-center">{selectedPassword.website}</Text>
             <View className="mb-4">
                 <Text className="text-lg font-semibold mb-2">Username</Text>

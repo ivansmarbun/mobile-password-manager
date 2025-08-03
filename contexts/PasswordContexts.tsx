@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface Password {
     id: number;
@@ -17,6 +17,9 @@ interface PasswordContextType {
     updatePassword: (id: number, updatedPasswordData: Partial<Omit<Password, 'id'>>) => void;
     deletePassword: (id: number) => void;
     loading: boolean;
+    searchQuery: string;
+    setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+    filteredPasswords: Password[];
 }
 
 const PasswordContexts = createContext<PasswordContextType | undefined>(undefined)
@@ -33,6 +36,7 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
     const [passwords, setPasswords] = useState<Password[]>([]);
     const [selectedPassword, setSelectedPassword] = useState<Password | null>(null);
     const [loading, setLoading] = useState<boolean>(true)
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
     const getPasswordIds = async (): Promise<number[]> => {
         try {
@@ -153,6 +157,17 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const filteredPasswords = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return passwords;
+        }
+
+        return passwords.filter(password =>
+            password.website.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            password.username.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [passwords, searchQuery]);
+
     return (
         <PasswordContexts.Provider value={{
             passwords,
@@ -163,6 +178,9 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
             updatePassword,
             deletePassword,
             loading,
+            searchQuery,
+            setSearchQuery,
+            filteredPasswords
         }}>
             {children}
         </PasswordContexts.Provider>

@@ -34,9 +34,12 @@ contexts/
 
 ### ✅ Completed Features
 - **Home Page** (`app/index.tsx`): Renders PasswordList component
-- **Password List Component** (`components/passwordList.tsx`): 
-  - Displays passwords in FlatList
+- **Password List Component** (`components/PasswordList.tsx`): 
+  - Displays passwords in FlatList with search functionality
+  - Real-time search filtering by website and username
+  - Empty states for no passwords and no search results
   - Navigation to detail page on item press
+  - Loading states during data fetching
   - Uses NativeWind classes for styling
 - **Password Detail Page** (`app/password/[id]/index.tsx`):
   - Shows selected password details (website, username, password)
@@ -53,6 +56,7 @@ contexts/
   - Password index management with `password_ids` array
   - Auto-generated IDs with `next_password_id` counter
   - selectedPassword state for detail view (typed as Password | null)
+  - Search functionality with searchQuery state and filteredPasswords
   - Async addPassword function for adding new passwords with persistence
   - Async updatePassword function for editing existing passwords with persistence
   - Async deletePassword function for removing passwords with persistence
@@ -79,6 +83,11 @@ contexts/
   - Delete shows confirmation modal before proceeding
 
 ### ✅ Recently Completed
+- **Search/Filter Functionality**: Implemented real-time password search
+  - Case-insensitive search across website and username fields
+  - Search state management in PasswordContext with useMemo optimization
+  - Empty states for both no passwords and no search results
+  - Filtered results display with conditional rendering
 - **Data Persistence**: Implemented Expo SecureStore for encrypted password storage
   - Individual password keys (`password_{id}`) for scalable storage
   - Password index management (`password_ids` array)
@@ -91,7 +100,6 @@ contexts/
 - **Loading UI**: Added loading spinner to PasswordList component
 
 ### ❌ Missing Features
-- Search/filter functionality
 - Password security features (visibility toggle, copy-to-clipboard)
 - Data backup/export functionality
 
@@ -149,19 +157,24 @@ interface Password {
 ```
 
 ## Next Priority Tasks
-1. Add search/filter functionality
-2. Implement password security features (visibility toggle, copy-to-clipboard)
-3. Add data backup/export functionality
+1. Implement password security features (visibility toggle, copy-to-clipboard)
+2. Add data backup/export functionality
+3. Password strength validation and generation
 
 ## Development Notes
 - Using NativeWind for styling (Tailwind CSS classes)
-- Context provides: `passwords`, `setPasswords`, `selectedPassword`, `setSelectedPassword`, `addPassword`, `updatePassword`, `deletePassword`, `loading`
+- Context provides: `passwords`, `setPasswords`, `selectedPassword`, `setSelectedPassword`, `addPassword`, `updatePassword`, `deletePassword`, `loading`, `searchQuery`, `setSearchQuery`, `filteredPasswords`
 - All CRUD operations are async and persist to SecureStore
 - Individual password storage pattern for scalability
 - Navigation handled by Expo Router with file-based routing
 - Add screen configured as modal presentation in navigation stack
 
 ## Update Log
+- **NEW**: Implemented complete search/filter functionality
+  - Real-time case-insensitive search across website and username
+  - Optimized filtering with useMemo for performance
+  - Comprehensive empty states for better UX
+  - Search state management integrated into PasswordContext
 - **MAJOR**: Implemented complete data persistence with Expo SecureStore
   - Individual password storage with encrypted keys
   - Password index management system
