@@ -1,4 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface Password {
@@ -13,13 +16,15 @@ interface PasswordContextType {
     setPasswords: React.Dispatch<React.SetStateAction<Password[]>>;
     selectedPassword: Password | null;
     setSelectedPassword: React.Dispatch<React.SetStateAction<Password | null>>;
-    addPassword: (passwordData: Omit<Password, 'id'>) => void;
-    updatePassword: (id: number, updatedPasswordData: Partial<Omit<Password, 'id'>>) => void;
-    deletePassword: (id: number) => void;
+    addPassword: (passwordData: Omit<Password, 'id'>) => Promise<void>;
+    updatePassword: (id: number, updatedPasswordData: Partial<Omit<Password, 'id'>>) => Promise<void>;
+    deletePassword: (id: number) => Promise<void>;
     loading: boolean;
     searchQuery: string;
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     filteredPasswords: Password[];
+    exportPasswords: () => Promise<void>;
+    importPasswords: () => Promise<void>;
 }
 
 const PasswordContexts = createContext<PasswordContextType | undefined>(undefined)
@@ -157,6 +162,91 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const exportPasswords = async (): Promise<void> => {
+        try {
+            const exportData = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                passwords: passwords
+            };
+
+            const jsonData = JSON.stringify(exportData, null, 2);
+            const fileName = `passwords_backup_${new Date().toISOString().split('T')[0]}.json`;
+            const fileUri = FileSystem.documentDirectory + fileName;
+
+            await FileSystem.writeAsStringAsync(fileUri, jsonData);
+
+            if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(fileUri, {
+                    mimeType: 'application/json',
+                    dialogTitle: 'Save Password Backup'
+                });
+            } else {
+                throw new Error('Sharing is not available on this device');
+            }
+        } catch (error) {
+            console.error('Error exporting passwords:', error);
+            throw error;
+        }
+    };
+
+    const importPasswords = async (): Promise<void> => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: 'application/json',
+                copyToCacheDirectory: true
+            });
+
+            if (result.canceled) {
+                // User cancelled - don't throw error, just return silently
+                return;
+            }
+
+            if (!result.assets || result.assets.length === 0) {
+                throw new Error('No file selected');
+            }
+
+            const fileUri = result.assets[0].uri;
+            const fileContent = await FileSystem.readAsStringAsync(fileUri);
+            const importData = JSON.parse(fileContent);
+
+            if (!importData.passwords || !Array.isArray(importData.passwords)) {
+                throw new Error('Invalid backup file format');
+            }
+
+            if (importData.passwords.length === 0) {
+                throw new Error('Backup file contains no passwords');
+            }
+
+            // Get the current next ID to avoid conflicts
+            const nextId = await getNextId();
+            let currentNextId = nextId;
+
+            for (const passwordData of importData.passwords) {
+                const newPassword = {
+                    ...passwordData,
+                    id: currentNextId
+                };
+
+                // Save to SecureStore
+                await SecureStore.setItemAsync(`password_${currentNextId}`, JSON.stringify(newPassword));
+                currentNextId++;
+            }
+
+            // Update the IDs index and next ID
+            const currentIds = await getPasswordIds();
+            const newIds = Array.from({ length: importData.passwords.length }, (_, i) => nextId + i);
+            await savePasswordIds([...currentIds, ...newIds]);
+            await saveNextId(currentNextId);
+
+            // Reload all passwords
+            await loadAllPasswords();
+        } catch (error) {
+            console.error('Error importing passwords:', error);
+            throw error;
+        }
+    };
+
     const filteredPasswords = useMemo(() => {
         if (!searchQuery.trim()) {
             return passwords;
@@ -180,7 +270,9 @@ export const PasswordProvider = ({ children }: { children: ReactNode }) => {
             loading,
             searchQuery,
             setSearchQuery,
-            filteredPasswords
+            filteredPasswords,
+            exportPasswords,
+            importPasswords
         }}>
             {children}
         </PasswordContexts.Provider>

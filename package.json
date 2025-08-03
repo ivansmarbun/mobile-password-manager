@@ -41,7 +41,10 @@
     "react-native-webview": "13.13.5",
     "tailwindcss": "^3.4.17",
     "expo-secure-store": "~14.2.3",
-    "expo-clipboard": "~7.1.5"
+    "expo-clipboard": "~7.1.5",
+    "expo-sharing": "~13.1.5",
+    "expo-file-system": "~18.1.11",
+    "expo-document-picker": "~13.1.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

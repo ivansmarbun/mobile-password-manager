@@ -1,12 +1,42 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 
 const PasswordList = () => {
     const router = useRouter();
-    const { setSelectedPassword, loading, searchQuery, setSearchQuery, filteredPasswords } = usePasswordContext();
+    const { setSelectedPassword, loading, searchQuery, setSearchQuery, filteredPasswords, exportPasswords, importPasswords } = usePasswordContext();
+
+    const handleExport = async () => {
+        try {
+            await exportPasswords();
+            Alert.alert('Success', 'Passwords exported successfully!');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to export passwords. Please try again.');
+        }
+    };
+
+    const handleImport = async () => {
+        Alert.alert(
+            'Import Passwords',
+            'This will add passwords from a backup file to your existing passwords. Continue?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Import',
+                    onPress: async () => {
+                        try {
+                            await importPasswords();
+                            Alert.alert('Success', 'Passwords imported successfully!');
+                        } catch (error) {
+                            Alert.alert('Error', 'Failed to import passwords. Please check the file format.');
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     if (loading) {
         return (
@@ -20,6 +50,23 @@ const PasswordList = () => {
     return (
         <View className='flex-1 pt-12 px-4'>
             <Text className="text-2xl font-bold mb-4">Password List</Text>
+            
+            {/* Export/Import Buttons */}
+            <View className="flex-row justify-between mb-4">
+                <TouchableOpacity
+                    onPress={handleExport}
+                    className="bg-green-500 px-4 py-2 rounded-lg flex-1 mr-2"
+                >
+                    <Text className="text-white font-semibold text-center">Export Backup</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleImport}
+                    className="bg-orange-500 px-4 py-2 rounded-lg flex-1 ml-2"
+                >
+                    <Text className="text-white font-semibold text-center">Import Backup</Text>
+                </TouchableOpacity>
+            </View>
+
             <TextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
