@@ -1,7 +1,8 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const DeleteButtonHeader = () => {
     const { selectedPassword, deletePassword } = usePasswordContext()
@@ -28,40 +29,52 @@ const DeleteButtonHeader = () => {
                 {/* Semi-transparent background */}
                 <View className="flex-1 justify-center items-center bg-black/50">
                     {/* Modal dialog */}
-                    <View className="bg-white p-6 rounded-lg mx-4 w-80">
-                        <Text className="text-lg font-bold mb-4 text-center">
-                            Delete Password
-                        </Text>
-                        <Text className="text-center mb-6">
-                            Are you sure you want to delete "{selectedPassword.website}"?
+                    <View className="bg-white p-6 rounded-xl mx-4 w-80 shadow-lg" style={{elevation: 10}}>
+                        <View className="items-center mb-4">
+                            <View className="bg-red-100 w-16 h-16 rounded-full items-center justify-center mb-4">
+                                <Ionicons name="warning" size={32} color="#DC2626" />
+                            </View>
+                            <Text className="text-xl font-bold text-gray-900 text-center">
+                                Delete Password
+                            </Text>
+                        </View>
+                        <Text className="text-center text-gray-600 mb-6 text-base">
+                            Are you sure you want to permanently delete the password for <Text className="font-semibold">"{selectedPassword.website}"</Text>? This action cannot be undone.
                         </Text>
 
                         <View className="flex-row justify-between">
-                            <Pressable
+                            <TouchableOpacity
                                 onPress={() => setModalVisible(false)}
-                                className="bg-gray-500 px-4 py-2 rounded flex-1 mr-2"
+                                className="bg-gray-100 px-6 py-3 rounded-xl flex-1 mr-3"
+                                activeOpacity={0.7}
                             >
-                                <Text className="text-white text-center font-semibold">Cancel</Text>
-                            </Pressable>
+                                <Text className="text-gray-700 text-center font-semibold text-base">Cancel</Text>
+                            </TouchableOpacity>
 
-                            <Pressable
+                            <TouchableOpacity
                                 onPress={handleDelete}
-                                className="bg-red-500 px-4 py-2 rounded flex-1 ml-2"
+                                className="bg-red-500 px-6 py-3 rounded-xl flex-1 ml-3"
+                                activeOpacity={0.8}
                             >
-                                <Text className="text-white text-center font-semibold">Delete</Text>
-                            </Pressable>
+                                <View className="flex-row items-center justify-center">
+                                    <Ionicons name="trash" size={16} color="white" style={{marginRight: 6}} />
+                                    <Text className="text-white text-center font-semibold text-base">Delete</Text>
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal >
-            <Text
-                className="mx-auto text-red-500"
+            <TouchableOpacity
                 onPress={() => {
                     setModalVisible(true)
                 }}
+                className="p-2"
+                activeOpacity={0.7}
+                style={{minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center'}}
             >
-                Delete
-            </Text>
+                <Ionicons name="trash" size={20} color="#DC2626" />
+            </TouchableOpacity>
         </>
     );;
 }

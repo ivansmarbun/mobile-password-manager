@@ -2,6 +2,7 @@ import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 
 const PasswordList = () => {
@@ -48,74 +49,116 @@ const PasswordList = () => {
 
     }
     return (
-        <View className='flex-1 pt-12 px-4'>
-            <Text className="text-2xl font-bold mb-4">Password List</Text>
-            
-            {/* Export/Import Buttons */}
-            <View className="flex-row justify-between mb-4">
-                <TouchableOpacity
-                    onPress={handleExport}
-                    className="bg-green-500 px-4 py-2 rounded-lg flex-1 mr-2"
-                >
-                    <Text className="text-white font-semibold text-center">Export Backup</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={handleImport}
-                    className="bg-orange-500 px-4 py-2 rounded-lg flex-1 ml-2"
-                >
-                    <Text className="text-white font-semibold text-center">Import Backup</Text>
-                </TouchableOpacity>
+        <View className='flex-1 bg-gray-50'>
+            {/* Header */}
+            <View className="bg-white pt-12 pb-6 px-6 shadow-sm">
+                <Text className="text-3xl font-bold text-gray-900 mb-2">SecureVault</Text>
+                <Text className="text-gray-600 text-base">Your passwords, secured</Text>
             </View>
-
-            <TextInput
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Search passwords..."
-                className="border border-gray-300 rounded-lg px-4 py-3 mb-4 bg-white"
-            />
-
-            {filteredPasswords.length === 0 && searchQuery.trim() === '' && (
-                <View className="flex-1 justify-center items-center">
-                    <Text className="text-gray-500 text-lg">No passwords saved</Text>
-                    <Text className="text-gray-400 text-sm mt-2">
-                        Tap the + button to add your first password
-                    </Text>
+            
+            <View className="flex-1 px-4">
+                {/* Action Buttons */}
+                <View className="flex-row justify-between mb-6 mt-4">
+                    <TouchableOpacity
+                        onPress={handleExport}
+                        className="bg-emerald-500 px-6 py-3 rounded-xl flex-1 mr-3 shadow-sm"
+                        style={{elevation: 2}}
+                    >
+                        <View className="flex-row items-center justify-center">
+                            <Ionicons name="cloud-upload-outline" size={18} color="white" style={{marginRight: 8}} />
+                            <Text className="text-white font-semibold">Export</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={handleImport}
+                        className="bg-amber-500 px-6 py-3 rounded-xl flex-1 ml-3 shadow-sm"
+                        style={{elevation: 2}}
+                    >
+                        <View className="flex-row items-center justify-center">
+                            <Ionicons name="cloud-download-outline" size={18} color="white" style={{marginRight: 8}} />
+                            <Text className="text-white font-semibold">Import</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
-            )}
 
-            {filteredPasswords.length === 0 && searchQuery.trim() !== '' && (
-                <View className="flex-1 justify-center items-center">
-                    <Text className="text-gray-500 text-lg">No passwords found</Text>
-                    <Text className="text-gray-400 text-sm mt-2">
-                        Try searching for a different website or username
-                    </Text>
+                {/* Search Bar */}
+                <View className="relative mb-6">
+                    <Ionicons 
+                        name="search" 
+                        size={20} 
+                        color="#9CA3AF" 
+                        style={{position: 'absolute', left: 16, top: 14, zIndex: 1}} 
+                    />
+                    <TextInput
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        placeholder="Search passwords..."
+                        className="bg-white border border-gray-200 rounded-xl pl-12 pr-4 py-4 text-base shadow-sm"
+                        style={{elevation: 1}}
+                    />
                 </View>
-            )}
 
-            {filteredPasswords.length > 0 && (
-                <FlatList
-                    data={filteredPasswords}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            onPress={() => {
-                                setSelectedPassword(item);
-                                router.push(`/password/${item.id}/`)
-                            }}
-                            className="mb-4">
-                            <View className="p-4 border-b border-gray-200">
-                                <Text className="text-lg font-bold">{item.website}</Text>
-                                <Text className="text-gray-600">{item.username}</Text>
-                            </View>
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={item => item.id.toString()}
-                />
-            )}
+                {filteredPasswords.length === 0 && searchQuery.trim() === '' && (
+                    <View className="flex-1 justify-center items-center">
+                        <Ionicons name="lock-closed-outline" size={64} color="#D1D5DB" />
+                        <Text className="text-gray-500 text-xl font-medium mt-4">No passwords saved</Text>
+                        <Text className="text-gray-400 text-base mt-2 text-center px-8">
+                            Tap the + button to add your first password
+                        </Text>
+                    </View>
+                )}
+
+                {filteredPasswords.length === 0 && searchQuery.trim() !== '' && (
+                    <View className="flex-1 justify-center items-center">
+                        <Ionicons name="search" size={64} color="#D1D5DB" />
+                        <Text className="text-gray-500 text-xl font-medium mt-4">No passwords found</Text>
+                        <Text className="text-gray-400 text-base mt-2 text-center px-8">
+                            Try searching for a different website or username
+                        </Text>
+                    </View>
+                )}
+
+                {filteredPasswords.length > 0 && (
+                    <FlatList
+                        data={filteredPasswords}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setSelectedPassword(item);
+                                    router.push(`/password/${item.id}/`)
+                                }}
+                                className="mb-3"
+                                activeOpacity={0.7}
+                            >
+                                <View className="bg-white rounded-xl p-4 shadow-sm" style={{elevation: 2}}>
+                                    <View className="flex-row items-center">
+                                        <View className="bg-blue-100 w-12 h-12 rounded-full items-center justify-center mr-4">
+                                            <Ionicons name="globe-outline" size={24} color="#3B82F6" />
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="text-lg font-semibold text-gray-900 mb-1">{item.website}</Text>
+                                            <Text className="text-gray-600 text-base">{item.username}</Text>
+                                        </View>
+                                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={item => item.id.toString()}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{paddingBottom: 100}}
+                    />
+                )}
+            </View>
+            
+            {/* Floating Action Button */}
             <TouchableOpacity
                 onPress={() => router.push('/add')}
-                className="absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
+                className="absolute bottom-8 right-6 bg-blue-500 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+                style={{elevation: 8}}
+                activeOpacity={0.8}
             >
-                <Text className="text-white text-2xl font-bold">+</Text>
+                <Ionicons name="add" size={28} color="white" />
             </TouchableOpacity>
         </View>
     );

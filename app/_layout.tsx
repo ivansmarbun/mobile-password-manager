@@ -1,5 +1,6 @@
 import { PasswordProvider } from "@/contexts/PasswordContexts";
 import { Stack } from "expo-router";
+import { View } from "react-native";
 
 import DeleteButtonHeader from "@/components/DeleteButtonHeader";
 import EditButtonHeader from "@/components/EditButtonHeader";
@@ -20,10 +21,10 @@ export default function RootLayout() {
     title: "",
     headerRight: () => {
       return (
-        <>
-          <DeleteButtonHeader />
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <EditButtonHeader />
-        </>
+          <DeleteButtonHeader />
+        </View>
       )
     }
   }} />
