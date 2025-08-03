@@ -9,6 +9,7 @@ React Native mobile password manager app using Expo and NativeWind for styling.
 - NativeWind (Tailwind CSS for React Native)
 - Context API for state management
 - Expo SecureStore for encrypted data persistence
+- Expo Clipboard for copy-to-clipboard functionality
 
 ## Project Structure
 ```
@@ -43,6 +44,10 @@ contexts/
   - Uses NativeWind classes for styling
 - **Password Detail Page** (`app/password/[id]/index.tsx`):
   - Shows selected password details (website, username, password)
+  - Password visibility toggle with show/hide functionality
+  - Copy-to-clipboard buttons for username and password
+  - Auto-clear clipboard after 30 seconds for passwords
+  - Visual feedback with alerts for copy operations
   - Has functional "Edit" and "Delete" buttons in header
   - Delete button shows confirmation modal before deletion
 - **Navigation Setup** (`app/_layout.tsx`):
@@ -83,6 +88,13 @@ contexts/
   - Delete shows confirmation modal before proceeding
 
 ### ✅ Recently Completed
+- **Password Security Features**: Implemented comprehensive security controls
+  - Password visibility toggle (show/hide with bullet masking)
+  - Copy-to-clipboard functionality for usernames and passwords
+  - Auto-clear clipboard after 30 seconds for password security
+  - Smart clipboard clearing (only clears if still contains copied password)
+  - Visual feedback with alert messages for all copy operations
+  - Error handling for clipboard operations
 - **Search/Filter Functionality**: Implemented real-time password search
   - Case-insensitive search across website and username fields
   - Search state management in PasswordContext with useMemo optimization
@@ -100,7 +112,6 @@ contexts/
 - **Loading UI**: Added loading spinner to PasswordList component
 
 ### ❌ Missing Features
-- Password security features (visibility toggle, copy-to-clipboard)
 - Data backup/export functionality
 
 ### 🚀 Production Readiness Checklist (Before App Store Publishing)
@@ -122,7 +133,7 @@ contexts/
 - [ ] **Data Migration**: Version migration handling
 
 #### Security Enhancements
-- [ ] **Auto-clear Clipboard**: Clear copied passwords after timeout
+- [x] **Auto-clear Clipboard**: Clear copied passwords after timeout
 - [ ] **Breach Monitoring**: Check passwords against known breaches
 - [ ] **Two-Factor Auth Support**: TOTP/2FA code generation
 - [ ] **Secure Notes**: Additional encrypted notes field
@@ -157,9 +168,9 @@ interface Password {
 ```
 
 ## Next Priority Tasks
-1. Implement password security features (visibility toggle, copy-to-clipboard)
-2. Add data backup/export functionality
-3. Password strength validation and generation
+1. Add data backup/export functionality
+2. Password strength validation and generation
+3. Enhanced security features (master password, biometric auth)
 
 ## Development Notes
 - Using NativeWind for styling (Tailwind CSS classes)
@@ -170,6 +181,12 @@ interface Password {
 - Add screen configured as modal presentation in navigation stack
 
 ## Update Log
+- **NEW**: Implemented password security features
+  - Password visibility toggle with show/hide functionality
+  - Copy-to-clipboard for usernames and passwords with Expo Clipboard
+  - Auto-clear clipboard after 30 seconds for enhanced security
+  - Smart clipboard management (only clears if still contains copied data)
+  - Comprehensive error handling and user feedback
 - **NEW**: Implemented complete search/filter functionality
   - Real-time case-insensitive search across website and username
   - Optimized filtering with useMemo for performance
