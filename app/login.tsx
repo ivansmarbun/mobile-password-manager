@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
+import PasswordToggle from '@/components/PasswordToggle';
 
 export default function Login() {
     const { login, biometricCapabilities, isBiometricEnabled, authenticateWithBiometric } = useAuth();
@@ -52,7 +53,7 @@ export default function Login() {
     };
 
     return (
-        <ScrollView className="flex-1 bg-gray-50">
+        <ScrollView className="flex-1 bg-gray-50" keyboardShouldPersistTaps="handled">
             {/* Header */}
             <View className="bg-white pt-16 pb-8 px-6 shadow-sm">
                 <View className="items-center">
@@ -88,18 +89,15 @@ export default function Login() {
                             className={`bg-white border ${error ? 'border-red-300' : 'border-gray-300'} rounded-2xl pl-16 pr-16 py-5 text-lg shadow-sm`}
                             style={{elevation: 2}}
                             autoFocus
+                            blurOnSubmit={false}
+                            keyboardType="default"
                         />
-                        <TouchableOpacity
-                            onPress={() => setShowPassword(!showPassword)}
-                            style={{position: 'absolute', right: 20, top: 18}}
-                            activeOpacity={0.7}
-                        >
-                            <Ionicons 
-                                name={showPassword ? 'eye-off' : 'eye'} 
-                                size={24} 
-                                color="#9CA3AF" 
-                            />
-                        </TouchableOpacity>
+                        <PasswordToggle
+                            isVisible={showPassword}
+                            onToggle={() => setShowPassword(!showPassword)}
+                            size={24}
+                            color="#9CA3AF"
+                        />
                     </View>
                     {error ? (
                         <View className="flex-row items-center mt-3">
