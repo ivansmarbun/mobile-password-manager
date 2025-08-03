@@ -4,11 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
-    const { login } = useAuth();
+    const { login, biometricCapabilities, isBiometricEnabled, authenticateWithBiometric } = useAuth();
     
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [biometricLoading, setBiometricLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleLogin = async () => {
@@ -29,6 +30,24 @@ export default function Login() {
             setError('An error occurred. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBiometricLogin = async () => {
+        setBiometricLoading(true);
+        setError('');
+        
+        try {
+            const result = await authenticateWithBiometric();
+            if (!result.success) {
+                if (result.errorType !== 'user_cancel') {
+                    setError(result.error || 'Biometric authentication failed');
+                }
+            }
+        } catch (error) {
+            setError('An error occurred during biometric authentication');
+        } finally {
+            setBiometricLoading(false);
         }
     };
 
@@ -116,6 +135,48 @@ export default function Login() {
                         )}
                     </View>
                 </TouchableOpacity>
+
+                {/* Biometric Authentication Button */}
+                {isBiometricEnabled && biometricCapabilities?.isAvailable && (
+                    <>
+                        <View className="flex-row items-center justify-center my-6">
+                            <View className="flex-1 h-px bg-gray-300"></View>
+                            <Text className="mx-4 text-gray-500 text-base">or</Text>
+                            <View className="flex-1 h-px bg-gray-300"></View>
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={handleBiometricLogin}
+                            disabled={biometricLoading}
+                            className={`py-5 rounded-2xl mb-6 shadow-lg ${
+                                biometricLoading ? 'bg-gray-300' : 'bg-green-500'
+                            }`}
+                            style={{elevation: 4}}
+                            activeOpacity={0.8}
+                        >
+                            <View className="flex-row items-center justify-center">
+                                {biometricLoading ? (
+                                    <>
+                                        <Ionicons name="reload-outline" size={24} color="white" style={{marginRight: 10}} />
+                                        <Text className="text-white text-center text-xl font-bold">Authenticating...</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Ionicons 
+                                            name={biometricCapabilities?.icon === 'face-recognition' ? 'scan' : 'finger-print'} 
+                                            size={24} 
+                                            color="white" 
+                                            style={{marginRight: 10}} 
+                                        />
+                                        <Text className="text-white text-center text-xl font-bold">
+                                            Use {biometricCapabilities?.primaryType}
+                                        </Text>
+                                    </>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    </>
+                )}
 
                 {/* Security Features Info */}
                 <View className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mt-8">

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
+import { BiometricAuth, BiometricCapabilities, BiometricAuthResult } from '@/utils/BiometricAuth';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -10,6 +11,12 @@ interface AuthContextType {
     logout: () => void;
     changeMasterPassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
     loading: boolean;
+    // Biometric authentication
+    biometricCapabilities: BiometricCapabilities | null;
+    isBiometricEnabled: boolean;
+    enableBiometric: () => Promise<boolean>;
+    disableBiometric: () => Promise<boolean>;
+    authenticateWithBiometric: () => Promise<BiometricAuthResult>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,11 +31,14 @@ export const useAuth = () => {
 
 const MASTER_PASSWORD_KEY = 'master_password_hash';
 const SALT_KEY = 'password_salt';
+const BIOMETRIC_ENABLED_KEY = 'biometric_enabled';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [hasSetupMasterPassword, setHasSetupMasterPassword] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [biometricCapabilities, setBiometricCapabilities] = useState<BiometricCapabilities | null>(null);
+    const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
 
     // Generate a random salt for password hashing using expo-crypto
     const generateSalt = async (): Promise<string> => {
@@ -46,11 +56,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return hashBuffer;
     };
 
-    // Check if master password is already set up
+    // Check if master password is already set up and initialize biometric state
     const checkMasterPasswordSetup = async (): Promise<void> => {
         try {
             const existingHash = await SecureStore.getItemAsync(MASTER_PASSWORD_KEY);
             setHasSetupMasterPassword(!!existingHash);
+            
+            // Initialize biometric capabilities and settings
+            const capabilities = await BiometricAuth.getCapabilities();
+            setBiometricCapabilities(capabilities);
+            
+            const biometricEnabledStr = await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY);
+            const biometricEnabled = biometricEnabledStr === 'true' && capabilities.isAvailable;
+            setIsBiometricEnabled(biometricEnabled);
         } catch (error) {
             console.error('Error checking master password setup:', error);
             setHasSetupMasterPassword(false);
@@ -142,6 +160,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    // Enable biometric authentication
+    const enableBiometric = async (): Promise<boolean> => {
+        try {
+            const canEnable = await BiometricAuth.canEnableBiometrics();
+            if (!canEnable.canEnable) {
+                console.error('Cannot enable biometrics:', canEnable.reason);
+                return false;
+            }
+
+            // Test biometric authentication before enabling
+            const result = await BiometricAuth.authenticate('Confirm biometric authentication to enable this feature');
+            if (result.success) {
+                await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, 'true');
+                setIsBiometricEnabled(true);
+                return true;
+            } else {
+                console.error('Biometric authentication failed:', result.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error enabling biometric authentication:', error);
+            return false;
+        }
+    };
+
+    // Disable biometric authentication
+    const disableBiometric = async (): Promise<boolean> => {
+        try {
+            await SecureStore.deleteItemAsync(BIOMETRIC_ENABLED_KEY);
+            setIsBiometricEnabled(false);
+            return true;
+        } catch (error) {
+            console.error('Error disabling biometric authentication:', error);
+            return false;
+        }
+    };
+
+    // Authenticate with biometrics
+    const authenticateWithBiometric = async (): Promise<BiometricAuthResult> => {
+        try {
+            if (!isBiometricEnabled || !biometricCapabilities?.isAvailable) {
+                return {
+                    success: false,
+                    error: 'Biometric authentication is not enabled or available',
+                    errorType: 'not_available'
+                };
+            }
+
+            const result = await BiometricAuth.authenticate();
+            if (result.success) {
+                setIsAuthenticated(true);
+            }
+            return result;
+        } catch (error) {
+            console.error('Error during biometric authentication:', error);
+            return {
+                success: false,
+                error: 'An error occurred during biometric authentication',
+                errorType: 'unknown'
+            };
+        }
+    };
+
     useEffect(() => {
         checkMasterPasswordSetup();
     }, []);
@@ -154,7 +235,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             login,
             logout,
             changeMasterPassword,
-            loading
+            loading,
+            biometricCapabilities,
+            isBiometricEnabled,
+            enableBiometric,
+            disableBiometric,
+            authenticateWithBiometric
         }}>
             {children}
         </AuthContext.Provider>

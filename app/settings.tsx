@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 
 export default function Settings() {
-    const { changeMasterPassword, logout } = useAuth();
+    const { changeMasterPassword, logout, biometricCapabilities, isBiometricEnabled, enableBiometric, disableBiometric } = useAuth();
     const router = useRouter();
     
     const [currentPassword, setCurrentPassword] = useState('');
@@ -17,6 +17,7 @@ export default function Settings() {
         confirm: false
     });
     const [loading, setLoading] = useState(false);
+    const [biometricLoading, setBiometricLoading] = useState(false);
     const [errors, setErrors] = useState({
         current: '',
         new: '',
@@ -77,6 +78,30 @@ export default function Settings() {
             Alert.alert('Error', 'Failed to change password. Please try again.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBiometricToggle = async () => {
+        setBiometricLoading(true);
+        try {
+            if (isBiometricEnabled) {
+                const success = await disableBiometric();
+                if (!success) {
+                    Alert.alert('Error', 'Failed to disable biometric authentication');
+                }
+            } else {
+                const success = await enableBiometric();
+                if (!success) {
+                    Alert.alert(
+                        'Error', 
+                        'Failed to enable biometric authentication. Please ensure biometric authentication is set up on your device.'
+                    );
+                }
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An error occurred while toggling biometric authentication');
+        } finally {
+            setBiometricLoading(false);
         }
     };
 
@@ -209,6 +234,73 @@ export default function Settings() {
                         </View>
                     </TouchableOpacity>
                 </View>
+
+                {/* Biometric Authentication Section */}
+                {biometricCapabilities?.hasHardware && (
+                    <View className="bg-white rounded-xl p-6 mb-6 shadow-sm" style={{elevation: 2}}>
+                        <View className="flex-row items-center mb-4">
+                            <Ionicons 
+                                name={biometricCapabilities?.icon === 'face-recognition' ? 'scan' : 'finger-print'} 
+                                size={24} 
+                                color="#3B82F6" 
+                                style={{marginRight: 12}} 
+                            />
+                            <Text className="text-xl font-bold text-gray-900">
+                                {biometricCapabilities?.primaryType} Authentication
+                            </Text>
+                        </View>
+
+                        <Text className="text-gray-600 text-base mb-4">
+                            {biometricCapabilities?.isAvailable 
+                                ? `Use ${biometricCapabilities?.primaryType} to quickly unlock SecureVault without entering your master password.`
+                                : biometricCapabilities?.isEnrolled 
+                                    ? 'Biometric authentication is available but not properly configured.'
+                                    : `Please set up ${biometricCapabilities?.primaryType} in your device settings to enable this feature.`
+                            }
+                        </Text>
+
+                        <TouchableOpacity
+                            onPress={handleBiometricToggle}
+                            disabled={!biometricCapabilities?.isAvailable || biometricLoading}
+                            className={`flex-row items-center justify-between py-4 px-4 rounded-lg ${
+                                biometricCapabilities?.isAvailable ? 'bg-gray-50' : 'bg-gray-100'
+                            }`}
+                            activeOpacity={0.7}
+                        >
+                            <View className="flex-row items-center flex-1">
+                                <Text className={`font-medium text-base ${
+                                    biometricCapabilities?.isAvailable ? 'text-gray-900' : 'text-gray-500'
+                                }`}>
+                                    Enable {biometricCapabilities?.primaryType}
+                                </Text>
+                            </View>
+                            
+                            {biometricLoading ? (
+                                <Ionicons name="reload-outline" size={20} color="#3B82F6" />
+                            ) : (
+                                <View className={`w-12 h-6 rounded-full ${
+                                    isBiometricEnabled ? 'bg-green-500' : 'bg-gray-300'
+                                } flex-row items-center ${
+                                    isBiometricEnabled ? 'justify-end' : 'justify-start'
+                                } px-1`}>
+                                    <View className="w-4 h-4 bg-white rounded-full shadow-sm" />
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        {!biometricCapabilities?.isAvailable && (
+                            <View className="mt-3 flex-row items-start">
+                                <Ionicons name="information-circle-outline" size={16} color="#F59E0B" style={{marginRight: 6, marginTop: 2}} />
+                                <Text className="text-amber-600 text-sm flex-1">
+                                    {!biometricCapabilities?.isEnrolled 
+                                        ? `Set up ${biometricCapabilities?.primaryType} in your device settings first`
+                                        : 'Biometric authentication needs to be properly configured'
+                                    }
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                )}
 
                 {/* Other Settings */}
                 <View className="bg-white rounded-xl p-6 mb-6 shadow-sm" style={{elevation: 2}}>
