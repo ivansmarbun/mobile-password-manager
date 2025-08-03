@@ -1,13 +1,22 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 
 const PasswordList = () => {
     const router = useRouter();
-    const { passwords, setSelectedPassword } = usePasswordContext();
+    const { passwords, setSelectedPassword, loading } = usePasswordContext();
 
+    if (loading) {
+        return (
+            <View className='flex-1 pt-12 px-4 justify-center items-center'>
+                <ActivityIndicator size="large" color="#3B82F6" />
+                <Text className="mt-4 text-gray-600">Loading passwords...</Text>
+            </View>
+        );
+
+    }
     return (
         <View className='flex-1 pt-12 px-4'>
             <Text className="text-2xl font-bold mb-4">Password List</Text>
