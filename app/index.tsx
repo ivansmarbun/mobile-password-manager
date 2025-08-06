@@ -1,7 +1,9 @@
 import PasswordList from "@/components/PasswordList";
 
-export default function Index() {
+const Index = () => {
   return (
     <PasswordList />
   );
-}
+};
+
+export default Index;

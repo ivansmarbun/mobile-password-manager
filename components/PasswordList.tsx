@@ -1,17 +1,17 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ActivityIndicator, Alert, SectionList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 
-const PasswordList = () => {
+const PasswordList = React.memo(function PasswordList() {
     const router = useRouter();
     const { logout } = useAuth();
     const { setSelectedPassword, loading, searchQuery, setSearchQuery, filteredPasswords, sortedAndGroupedPasswords, exportPasswords, importPasswords } = usePasswordContext();
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         Alert.alert(
             'Logout',
             'Are you sure you want to logout? You will need to enter your master password again.',
@@ -20,18 +20,18 @@ const PasswordList = () => {
                 { text: 'Logout', style: 'destructive', onPress: logout }
             ]
         );
-    };
+    }, [logout]);
 
-    const handleExport = async () => {
+    const handleExport = useCallback(async () => {
         try {
             await exportPasswords();
             Alert.alert('Success', 'Passwords exported successfully!');
         } catch (error) {
             Alert.alert('Error', 'Failed to export passwords. Please try again.');
         }
-    };
+    }, [exportPasswords]);
 
-    const handleImport = async () => {
+    const handleImport = useCallback(async () => {
         Alert.alert(
             'Import Passwords',
             'This will add passwords from a backup file to your existing passwords. Continue?',
@@ -50,7 +50,7 @@ const PasswordList = () => {
                 }
             ]
         );
-    };
+    }, [importPasswords]);
 
     if (loading) {
         return (
@@ -201,6 +201,6 @@ const PasswordList = () => {
             </TouchableOpacity>
         </View>
     );
-}
+});
 
 export default PasswordList;

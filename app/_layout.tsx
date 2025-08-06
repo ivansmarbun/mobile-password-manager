@@ -8,7 +8,7 @@ import EditButtonHeader from "@/components/EditButtonHeader";
 import AuthGuard from "@/components/AuthGuard";
 import './globals.css';
 
-export default function RootLayout() {
+const RootLayout = () => {
   return (
     <AuthProvider>
       <PasswordProvider>
@@ -52,5 +52,7 @@ export default function RootLayout() {
         </AuthGuard>
       </PasswordProvider>
     </AuthProvider>
-  )
-}
+  );
+};
+
+export default RootLayout;

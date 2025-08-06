@@ -1,21 +1,23 @@
 import { usePasswordContext } from '@/contexts/PasswordContexts';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { Modal, Pressable, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { Modal, Text, View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const DeleteButtonHeader = () => {
+const DeleteButtonHeader = React.memo(function DeleteButtonHeader() {
     const { selectedPassword, deletePassword } = usePasswordContext()
     const [modalVisible, setModalVisible] = useState(false);
 
+    const handleDelete = useCallback(() => {
+        if (selectedPassword) {
+            deletePassword(selectedPassword.id);
+            setModalVisible(false);
+            router.back();
+        }
+    }, [deletePassword, selectedPassword?.id]);
+
     if (!selectedPassword) {
         return null;
-    }
-
-    const handleDelete = () => {
-        deletePassword(selectedPassword.id);
-        setModalVisible(false);
-        router.back();
     }
 
     return (
@@ -76,7 +78,7 @@ const DeleteButtonHeader = () => {
                 <Ionicons name="trash" size={20} color="#DC2626" />
             </TouchableOpacity>
         </>
-    );;
-}
+    );
+});
 
 export default DeleteButtonHeader;
